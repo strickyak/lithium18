@@ -54,8 +54,9 @@ func RandomBytes(n int) []byte {
 	return buf
 }
 func RandomCode() []byte {
+	const kLimitMask = 63 // 0..63 for code length.
 	buf := RandomBytes(1)
-	codeLen := int(buf[0]) + 1
+	codeLen := int(buf[0]&kLimitMask) + 1
 	return RandomBytes(codeLen)
 }
 

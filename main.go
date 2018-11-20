@@ -34,6 +34,10 @@ func main() {
 		for i := 0; i < *OutputMAX; i++ {
 			want[i] = Num(i + 1)
 		}
+	case "ramp8":
+		for i := 0; i < *OutputMAX; i++ {
+			want[i] = Num(i+1) % 8
+		}
 	case "fib":
 		want[0] = 1
 		want[1] = 1
@@ -54,8 +58,10 @@ func main() {
 	for gen := 0; gen < 1000000; gen++ {
 		ScorePopulation(pop, want)
 		fmt.Printf("\n%d: [", gen)
+		topScores := 0.0
 		for i := 0; i < 10; i++ {
 			fmt.Printf("%.4g ", pop.Creatures[i].Score)
+			topScores += pop.Creatures[i].Score
 		}
 		fmt.Printf("]\n%d: (", gen)
 		for _, x := range pop.Creatures[0].Output {
@@ -63,12 +69,16 @@ func main() {
 		}
 		fmt.Printf(")\n")
 
-		for i := 0; i < 10; i++ {
-			for j := 0; j < 20 && j < len(pop.Creatures[i].Code); j++ {
-				op := pop.Creatures[i].Code[j]
-				fmt.Printf("%x.%s ", op, FormatOpcode(op))
+		if topScores < 1.0 {
+			for i := 0; i < 10; i++ {
+				for j := 0; j < 20 && j < len(pop.Creatures[i].Code); j++ {
+					opcode := pop.Creatures[i].Code[j]
+					cmd, arg := DecodeOpcode(opcode)
+					fmt.Printf("%d.%d.%s ", cmd, arg, FormatOpcode(opcode))
+				}
+				fmt.Printf("\n")
 			}
-			fmt.Printf("\n")
+			break
 		}
 
 		MutatePopulation(pop, len(pop.Creatures)/20)

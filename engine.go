@@ -88,8 +88,8 @@ func (s *Stack) Peek() Num {
 
 func (e *Engine) Step() {
 	opcode := e.Code[e.PC]
+	cmd, arg := DecodeOpcode(opcode)
 	e.SetPC(e.PC + 1)
-	cmd, arg := (opcode/N)%byte(NUM_OPS), (opcode % N)
 
 	switch Opcode(cmd) {
 	case Alu:
@@ -127,10 +127,11 @@ func (e *Engine) Step() {
 		e.Data.Push(Num(arg))
 	}
 }
-func (e *Engine) JumpToMark(arg byte) {
+func (e *Engine) JumpToMark(targ byte) {
 	n := len(e.Code)
 	for i := 1; i < n/2; i++ {
-		if e.Code[(e.PC+i)%n]%N == arg {
+		_, arg := DecodeOpcode(e.Code[(e.PC+i)%n])
+		if arg == targ {
 			e.SetPC(e.PC + i)
 			break
 		}
@@ -186,8 +187,12 @@ func (e *Engine) SetPC(pc int) {
 	e.PC = (pc%lc + lc) % lc
 }
 
+func DecodeOpcode(opcode byte) (byte, byte) {
+	return (opcode / N) % byte(NUM_OPS), (opcode % N)
+}
+
 func FormatOpcode(opcode byte) string {
-	cmd, arg := (opcode/N)%byte(NUM_OPS), (opcode % N)
+	cmd, arg := DecodeOpcode(opcode)
 
 	switch Opcode(cmd) {
 	case Alu:
